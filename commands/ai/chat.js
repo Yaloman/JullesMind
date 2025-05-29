@@ -34,12 +34,16 @@ module.exports = {
   async execute(interaction) {
     const prompt = interaction.options.getString('prompt');
     const userId = interaction.user.id;
+    
 
     await interaction.deferReply();
 
     await saveMessage(userId, prompt);
     const response = await getBotReply(userId, prompt);
     await saveMessage(userId, response);
+    const logEvent = require('../../utils/logger');
+    await logEvent('messages', { user: userId, prompt, response });
+
 
     // Split and send message chunks
     const messageParts = splitMessageWithPrefix(response);

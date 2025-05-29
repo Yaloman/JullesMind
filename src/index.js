@@ -89,6 +89,9 @@ if (isInConversation(userId)) {
   await saveMessage(userId, message.content);
 const response = await getBotReply(userId, message.content);
 await saveMessage(userId, response);
+const logEvent = require('../utils/logger');
+    await logEvent('messages', { user: userId, prompt, response });
+
 
 // Split and send message parts
 const messageParts = splitMessageWithPrefix(response);
