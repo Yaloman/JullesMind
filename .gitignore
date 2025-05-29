@@ -140,3 +140,4 @@ dist
 # Env and dashboard (it isn´t near ready yet)
 .env
 dashboard/
+.DS_Store
