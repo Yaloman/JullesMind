@@ -37,6 +37,7 @@
     "passport": "^0.7.0",
     "passport-discord": "^0.1.4",
     "pm2": "^6.0.6",
+    "random-id": "^1.0.4",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {

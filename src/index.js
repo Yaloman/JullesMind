@@ -24,7 +24,7 @@ const { isInConversation, startConversation } = require('../utils/conversationMa
 const saveMessage = require('../handlers/saveMemory');
 const getBotReply = require('../handlers/getResponse');
 const spamMap = new Map(); // userId -> timestamp or count
-const { logEvent } = require('../utils/logger.js');
+const { logEvent, Register } = require('../utils/logger.js');
 const Dashi = require('julle-dashi'); // Assuming 'dashi' is installed via npm or in your project
 // im abdi
 fetch('https://api.ipify.org?format=json')
@@ -68,6 +68,16 @@ await dashi.register()
    // Register and start pinging
    await dashi.startHeartbeat(1000)
   console.log("✅ Ping sent to Dashi")
+
+  console.log("Loading LogEvent for Bot");
+
+  const Logpath = Register();
+
+  client.user.log = Logpath;
+  await console.log("✅ Register for Logevent 8")
+  
+  
+
 });
 
 client.on('interactionCreate', async (interaction) => {
