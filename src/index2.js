@@ -24,18 +24,10 @@ const { isInConversation, startConversation } = require('../utils/conversationMa
 const saveMessage = require('../handlers/saveMemory');
 const getBotReply = require('../handlers/getResponse');
 const spamMap = new Map(); // userId -> timestamp or count
-const { logEvent } = require('../utils/logger.js');
+
 const Dashi = require('julle-dashi'); // Assuming 'dashi' is installed via npm or in your project
-// im abdi
-fetch('https://api.ipify.org?format=json')
-  .then(response => response.json())
-  .then(data => {
-    console.log('IP Address:', data.ip);
-  })
-  .catch(error => {
-    console.error('Error fetching IP address:', error);
-  });
-  
+
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -196,7 +188,7 @@ startConversation(userId, async () => {
 
 
 
-client.login(process.env.BOT_TOKEN)
+client.login(process.env.T2)
   .then(() => console.log("🟢 Botten logget inn"))
   .catch(err => {
     console.error("❌ Klarte ikke å logge inn:", err);

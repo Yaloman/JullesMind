@@ -32,6 +32,7 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
+    console.log("Ai Feature Engaged")
     const prompt = interaction.options.getString('prompt');
     const userId = interaction.user.id;
     
@@ -41,8 +42,7 @@ module.exports = {
     await saveMessage(userId, prompt);
     const response = await getBotReply(userId, prompt);
     await saveMessage(userId, response);
-    const logEvent = require('../../utils/logger');
-    await logEvent('messages', { user: userId, prompt, response });
+    
 
 
     // Split and send message chunks
@@ -54,9 +54,11 @@ module.exports = {
     for (let i = 1; i < totalParts; i++) {
       await interaction.channel.send(`**Part ${i + 1}/${totalParts}**\n${messageParts[i]}`);
     }
+    console.log("Ai Feature Active")
 
     startConversation(userId, async () => {
       await interaction.channel.send(`<@${userId}> AI chat ended due to inactivity.`);
+      console.log("Ai Feature Ended")
     });
   }
 };

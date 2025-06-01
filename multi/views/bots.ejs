@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Connected Bots</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <h1>Connected Bots</h1>
+  <ul>
+    <% Object.keys(bots).forEach(function(botId) { %>
+      <li>
+        <strong><%= bots[botId].name %></strong><br>
+        Guilds: <%= bots[botId].guilds %><br>
+        Last Update: <%= bots[botId].lastUpdate.toISOString() %>
+      </li>
+    <% }); %>
+  </ul>
+</body>
+</html>
