@@ -60,7 +60,7 @@ client.once('ready', async() => {
   const dashi = new Dashi({
     botId: client.user.id,
     name: client.user.username,
-    dashboardUrl: 'http://localhost:3000', // Change this to your dashboard URL
+    dashboardUrl: process.env.DASHBOARD_URL, // Change this to your dashboard URL
     guildCountFn: () => client.guilds.cache.size
   });
   console.log("✅ Utalizing Dashi")

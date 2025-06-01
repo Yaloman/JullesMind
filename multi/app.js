@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = 8080;
 
 // In-memory storage for bots
 const bots = {};
@@ -37,5 +37,5 @@ app.get('/bots', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Dashboard running at http://localhost:${PORT}`);
+  console.log(`Dashboard running at ${PORT}`);
 });

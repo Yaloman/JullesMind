@@ -7,35 +7,18 @@ module.exports = {
 
   async execute(interaction) {
     const guildId = interaction.guildId;
-    const baseUrl = `http://localhost:3000/${guildId}`;
+    const baseUrl = process.env.DASHBOARD_URL;
 
     const row1 = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setLabel('⚙️ Innstillinger')
+        .setLabel('⚙️ Active Bots')
         .setStyle(ButtonStyle.Link)
-        .setURL(`${baseUrl}/settings`),
+        .setURL(`${baseUrl}/bots`),
       new ButtonBuilder()
-        .setLabel('📄 Kø')
+        .setLabel('📄 Settings (coming soon)')
         .setStyle(ButtonStyle.Link)
         .setURL(`${baseUrl}/queue`)
-    );
-
-    const row2 = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setLabel('🧾 Logger')
-        .setStyle(ButtonStyle.Link)
-        .setURL(`${baseUrl}/logs`),
-      new ButtonBuilder()
-        .setLabel('🎧 Avspilling')
-        .setStyle(ButtonStyle.Link)
-        .setURL(`${baseUrl}/playback`)
-    );
-
-    const row3 = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setLabel('👥 Medlemmer')
-        .setStyle(ButtonStyle.Link)
-        .setURL(`${baseUrl}/members`)
+        .setDisabled()
     );
 
     await interaction.reply({
