@@ -23,7 +23,7 @@ module.exports = {
 
     await interaction.reply({
       content: `🛠️ Klikk på en knapp for å åpne en del av dashboardet for denne serveren.`,
-      components: [row1, row2, row3],
+      components: [row1],
       ephemeral: true
     });
   }
