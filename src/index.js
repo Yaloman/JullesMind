@@ -57,6 +57,7 @@ loadCommands(client);
 client.once('ready', async() => {
   console.log(`✅ Logged in as ${client.user.tag}`);
    // Initialize Dashi
+   if(process.env.dash) {
   const dashi = new Dashi({
     botId: client.user.id,
     name: client.user.username,
@@ -68,7 +69,7 @@ await dashi.register()
    // Register and start pinging
    await dashi.startHeartbeat(1000)
   console.log("✅ Ping sent to Dashi")
-
+   }
   console.log("Loading LogEvent for Bot");
 
   const Logpath = Register();
