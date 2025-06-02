@@ -57,7 +57,7 @@ loadCommands(client);
 client.once('ready', async() => {
   console.log(`✅ Logged in as ${client.user.tag}`);
    // Initialize Dashi
-   if(process.env.dash) {
+   if(process.env.dash = true) {
   const dashi = new Dashi({
     botId: client.user.id,
     name: client.user.username,
