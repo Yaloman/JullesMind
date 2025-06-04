@@ -2,6 +2,7 @@
 
 // src/index.js
 console.log("🚀 Starter botten...");
+const tickets = require ('../utils/tickets.js')
 require('dotenv').config();
 console.log("🚀 Starter botten...2");
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
@@ -25,8 +26,10 @@ const saveMessage = require('../handlers/saveMemory');
 const getBotReply = require('../handlers/getResponse');
 const spamMap = new Map(); // userId -> timestamp or count
 const { logEvent, Register } = require('../utils/logger.js');
-const Dashi = require('julle-dashi'); // Assuming 'dashi' is installed via npm or in your project
-// im abdi
+const Dashi = require('../multi/dashi/index.js'); // Assuming 'dashi' is installed via npm or in your project
+const Ticket = require('../database/schemas/Ticket');
+
+const rId = require('random-id')
 fetch('https://api.ipify.org?format=json')
   .then(response => response.json())
   .then(data => {
@@ -48,28 +51,38 @@ console.log("🚀 Starter botten...12");
 client.commands = new Collection();
 client.slashCommands = new Collection();
 client.prefix = '!';
-
+const rId2 = rId(10, 'A20');
 // Load
 setupDistube(client);
 connectDB();
 loadCommands(client);
-
+const dashi = new Dashi({
+  apiUrl: 'http://localhost:3001', // replace with real dashboard API URL
+  token: rId2
+});
 client.once('ready', async() => {
   console.log(`✅ Logged in as ${client.user.tag}`);
-   // Initialize Dashi
-   if(process.env.dash = true) {
-  const dashi = new Dashi({
-    botId: client.user.id,
-    name: client.user.username,
-    dashboardUrl: process.env.DASHBOARD_URL, // Change this to your dashboard URL
-    guildCountFn: () => client.guilds.cache.size
+
+
+
+  
+  await dashi.register({
+    clientId: client.user.id,
+    username: client.user.username,
+    avatar: client.user.displayAvatarURL(),
+    latency: client.ws.ping,
+    invite: `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`
   });
-  console.log("✅ Utalizing Dashi")
-await dashi.register()
-   // Register and start pinging
-   await dashi.startHeartbeat(1000)
-  console.log("✅ Ping sent to Dashi")
-   }
+
+  dashi.sendUpdate(() => ({
+    guildCount: client.guilds.cache.size,
+    users: client.users.cache.size,
+    latency: client.ws.ping,
+  }));
+
+
+
+
   console.log("Loading LogEvent for Bot");
 
   const Logpath = Register();
@@ -82,6 +95,11 @@ await dashi.register()
 });
 
 client.on('interactionCreate', async (interaction) => {
+  if (interaction.isButton() && interaction.customId === 'close_ticket') return tickets.close(client,interaction);
+  if (interaction.isButton() && interaction.customId === 'delete_ticket') return tickets.del(client,interaction);
+  //if (interaction.isButton() && interaction.customId === 'trans_ticket') return tickets.trans(client,interaction);
+  
+  if (interaction.isButton() && interaction.customId === 'create_ticket') return tickets.create(client , interaction, interaction.message.id);
   if (!interaction.isCommand()) return;
   const command = client.slashCommands.get(interaction.commandName);
   if (!command) return;
@@ -92,6 +110,8 @@ client.on('interactionCreate', async (interaction) => {
     console.error(error);
     await interaction.reply({ content: 'There was an error executing this command.', ephemeral: true });
   }
+
+  
 });
 const MAX_DISCORD_LENGTH = 2000;
 

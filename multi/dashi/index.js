@@ -1,46 +1,47 @@
-const axios = require("axios");
-const { logInfo, logError } = require("./utils");
+const axios = require('axios');
 
 class Dashi {
-  constructor({ botId, name, dashboardUrl, guildCountFn }) {
-    this.botId = botId;
-    this.name = name;
-    this.dashboardUrl = dashboardUrl;
-    this.guildCountFn = guildCountFn;
-
-    this._heartbeatInterval = null;
+  constructor({ apiUrl, token }) {
+    this.apiUrl = apiUrl;
+    this.token = token;
+    this.guildCountFn = null;
+    this.clientId = null;
+    this.interval = null;
+    this.latency = null;
   }
 
-  async register() {
-    try {
+  register(botInfo) {
+    this.clientId = botInfo.clientId;
 
-      const guilds = this.guildCountFn();
-      const res = await axios.post(`${this.dashboardUrl}/api/register-bot`, {
-        botId: this.botId,
-        name: this.name,
-        guilds,
-      });
-      logInfo("Bot registered:", res.data);
-    } catch (err) {
-      logError("Register error:", err.response?.data || err.message);
-    }
-  }
-
-  startHeartbeat(interval = 5000) {
-    this._heartbeatInterval = setInterval(async () => {
-      try {
-        await axios.post(`${this.dashboardUrl}/api/ping`, {
-          botId: this.botId,
-        });
-        logInfo("Heartbeat sent");
-      } catch (err) {
-        logError("Heartbeat error:", err.response?.data || err.message);
+    return axios.post(`${this.apiUrl}/api/bots`, botInfo, {
+      headers: {
+        Authorization: `Bearer ${this.token}`
       }
-    }, interval);
+    }).then(() => {
+      console.log('[Dashi] Bot registered successfully');
+    }).catch(err => {
+      console.error('[Dashi:ERROR] Register error:', err.message);
+    });
   }
 
-  stopHeartbeat() {
-    clearInterval(this._heartbeatInterval);
+  sendUpdate(getStatsFn) {
+    this.interval = setInterval(async () => {
+      try {
+        const stats = await getStatsFn();
+        await axios.post(`${this.apiUrl}/api/bots`, stats, {
+          headers: {
+            Authorization: `Bearer ${this.token}`
+          }
+        });
+        console.log('[Dashi] Sent update to dashboard');
+      } catch (err) {
+        console.error('[Dashi:ERROR] Failed to send update:', err.message);
+      }
+    }, 5000); // every 20 seconds
+  }
+
+  stopUpdates() {
+    if (this.interval) clearInterval(this.interval);
   }
 }
 

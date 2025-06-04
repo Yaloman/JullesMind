@@ -1,0 +1,21 @@
+{
+  "name": "julles-dashboard-api",
+  "version": "1.0.0",
+  "description": "API backend for the JullesMind universal Discord bot dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "Abdi Hassan",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.3",
+    "mongoose": "^7.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
