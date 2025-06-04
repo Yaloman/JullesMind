@@ -57,7 +57,7 @@ setupDistube(client);
 connectDB();
 loadCommands(client);
 const dashi = new Dashi({
-  apiUrl: 'http://localhost:3001', // replace with real dashboard API URL
+  apiUrl: process.env.api, // replace with real dashboard API URL
   token: rId2
 });
 client.once('ready', async() => {
