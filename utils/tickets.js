@@ -84,6 +84,14 @@ await interaction.channel.send({
     components: [row]
 })
 
+const member = await interaction.guild.members.fetch(ticket.userId).catch(() => null);
+if (member) {
+  await interaction.channel.permissionOverwrites.edit(member.id, {
+    SendMessages: false,
+    ViewChannel: true
+  }).catch(() => console.log('❌ Kunne ikke endre tillatelser'));
+}
+
 
 
 
@@ -212,10 +220,20 @@ async function reopen(client, interaction) {
     ephemeral: true
   });
 
-  // Valgfritt: notify kanalen
-  await interaction.channel.send({
+  const member = await interaction.guild.members.fetch(ticket.userId).catch(() => null);
+if (member) {
+  await interaction.channel.permissionOverwrites.edit(member.id, {
+    SendMessages: true,
+    ViewChannel: true
+  }).catch(() => console.log('❌ Kunne ikke gi skrivetilgang'));
+}
+
+
+  return await interaction.channel.send({
     content: `🔓 Ticket reopened by <@${interaction.user.id}>.`
   });
+
+
 }
 
 module.exports = {
