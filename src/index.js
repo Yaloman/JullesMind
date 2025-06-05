@@ -2,16 +2,24 @@
 
 // src/index.js
 console.log("🚀 Starter botten...");
-const tickets = require ('../utils/tickets.js')
-require('dotenv').config();
 console.log("🚀 Starter botten...2");
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+require('dotenv').config();
 console.log("🚀 Starter botten...3");
+console.log("Step 1 - Starter botten...");
+const tickets = require('../utils/tickets.js');
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
+console.log("Step 2 - Discord.js importert");
+
 const fs = require('fs');
-console.log("🚀 Starter botten...4");
+console.log("Step 3 - FS loaded");
+
 const path = require('path');
+console.log("Step 4 - Path loaded");
+
 console.log("🚀 Starter botten..5.");
+
 const loadCommands = require('../handlers/commandHandler');
+
 console.log("📦 Importerer distubeClient...");
 const setupDistube = require('../utils/distubeClient');
 console.log("✅ distubeClient importert!");
@@ -70,14 +78,20 @@ client.once('ready', async() => {
     clientId: client.user.id,
     username: client.user.username,
     avatar: client.user.displayAvatarURL(),
+    guildCount: client.guilds.cache.size,
+    users: client.users.cache.size,
     latency: client.ws.ping,
     invite: `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`
   });
 
-  dashi.sendUpdate(() => ({
+  await dashi.sendUpdate(() => ({
+    clientId: client.user.id,
+    username: client.user.username,
     guildCount: client.guilds.cache.size,
     users: client.users.cache.size,
     latency: client.ws.ping,
+    avatar: client.user.displayAvatarURL(),
+    invite: `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`
   }));
 
 
@@ -97,7 +111,22 @@ client.once('ready', async() => {
 client.on('interactionCreate', async (interaction) => {
   if (interaction.isButton() && interaction.customId === 'close_ticket') return tickets.close(client,interaction);
   if (interaction.isButton() && interaction.customId === 'delete_ticket') return tickets.del(client,interaction);
-  //if (interaction.isButton() && interaction.customId === 'trans_ticket') return tickets.trans(client,interaction);
+  if (interaction.isButton() && interaction.customId === 'reopen_ticket') return tickets.reopen(client,interaction);
+  if (interaction.isButton() && interaction.customId === 'trans_ticket') {
+  await interaction.deferReply({ ephemeral: true });
+
+  const transcript = await tickets.createTranscriptInDb(interaction.channel);
+  const user = await interaction.guild.members.fetch(transcript.t.userId).catch(() => null);
+
+  if (user) {
+    await user.send({
+      content: `📄 Her er transcripten for ticketen din:\n${process.env.api}/transcripts?file=${transcript.Id}`
+    }).catch(() => console.log('Kunne ikke sende DM'));
+  }
+
+  return await interaction.editReply({ content: '✅ Transcript sendt til brukeren!', ephemeral: true });
+}
+
   
   if (interaction.isButton() && interaction.customId === 'create_ticket') return tickets.create(client , interaction, interaction.message.id);
   if (!interaction.isCommand()) return;

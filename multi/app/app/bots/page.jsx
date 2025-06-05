@@ -10,7 +10,7 @@ export default function BotsPage() {
 
   useEffect(() => {
     async function fetchBots() {
-      const res = await fetch('http://localhost:3001/api/bots'); // adjust port if needed
+      const res = await fetch('https://api.croove.me/api/bots'); // adjust port if needed
       const data = await res.json();
       setBots(data.bots);
     }

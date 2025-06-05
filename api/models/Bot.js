@@ -8,6 +8,7 @@ const botSchema = new mongoose.Schema({
   guildCount: Number,
   latency: Number,
   invite: String,
+  users: String,
   lastUpdated: { type: Date, default: Date.now },
 });
 

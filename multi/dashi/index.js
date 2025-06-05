@@ -13,7 +13,7 @@ class Dashi {
   register(botInfo) {
     this.clientId = botInfo.clientId;
 
-    return axios.post(`${this.apiUrl}/api/bots`, botInfo, {
+    return axios.post(`${this.apiUrl}/api/bots/register`, botInfo, {
       headers: {
         Authorization: `Bearer ${this.token}`
       }

@@ -8,7 +8,44 @@ const Ticket = require('../database/schemas/Ticket');
 const Panel = require('../database/schemas/Panel');
 const { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ChannelType, PermissionFlagsBits } = require('discord.js')
 const rId = require ('random-id');
+const Transcript = require('../api/models/Transcript');
+const crypto = require('crypto');
 
+async function createTranscriptInDb(channel) {
+  const messages = [];
+  let lastId;
+
+  while (true) {
+    const fetched = await channel.messages.fetch({ limit: 100, before: lastId }).catch(() => null);
+    if (!fetched || fetched.size === 0) break;
+    messages.push(...fetched.values());
+    lastId = fetched.last().id;
+  }
+
+  messages.reverse();
+
+  const content = messages.map(m => {
+    const ts = m.createdAt.toLocaleString();
+    return `[${ts}] ${m.author.tag}: ${m.content}`;
+  }).join('\n');
+
+  const transcriptId = crypto.randomBytes(6).toString('hex');
+  const t1 = await Ticket.findOne({
+    channelId: channel.id
+  });
+  await Transcript.create({
+    transcriptId,
+    ticketId: t1.Id,
+    userId: t1.userId,
+    channelId: channel.id,
+    content
+  });
+  const transcript = await {
+    Id: transcriptId,
+    t: t1
+  }
+  return transcript;
+}
 async function close(client, interaction) {
   const ticket = await Ticket.findOne({ channelId: interaction.channel.id, status: 'open' });
     if (!ticket) {
@@ -160,9 +197,31 @@ console.log(panel.category)
    // {}
 
 }
+async function reopen(client, interaction) {
+  const ticket = await Ticket.findOne({ channelId: interaction.channel.id, status: 'closed' });
+  if (!ticket) {
+    return interaction.reply({ content: '❌ Ticket not found or already open.', ephemeral: true });
+  }
+
+  // Oppdater status i databasen
+  await Ticket.findByIdAndUpdate(ticket._id, { status: 'open' });
+
+  // Send bekreftelse
+  await interaction.reply({
+    content: '✅ Ticket reopened!',
+    ephemeral: true
+  });
+
+  // Valgfritt: notify kanalen
+  await interaction.channel.send({
+    content: `🔓 Ticket reopened by <@${interaction.user.id}>.`
+  });
+}
 
 module.exports = {
   close,
   del,
-  create
+  create,
+  createTranscriptInDb,
+  reopen
 };
