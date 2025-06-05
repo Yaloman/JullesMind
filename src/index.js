@@ -1,5 +1,6 @@
 // Vi starter med src/index.js og bygger hele bot-strukturen steg for steg
 
+
 // src/index.js
 console.log("🚀 Starter botten...");
 console.log("🚀 Starter botten...2");
@@ -7,7 +8,7 @@ require('dotenv').config();
 console.log("🚀 Starter botten...3");
 console.log("Step 1 - Starter botten...");
 const tickets = require('../utils/tickets.js');
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 console.log("Step 2 - Discord.js importert");
 
 const fs = require('fs');
@@ -118,12 +119,32 @@ client.on('interactionCreate', async (interaction) => {
   const transcript = await tickets.createTranscriptInDb(interaction.channel);
   const user = await interaction.guild.members.fetch(transcript.t.userId).catch(() => null);
 
+  // Lag embed
+ const transcriptEmbed = new EmbedBuilder()
+  .setTitle('📄 Transcript for ticket')
+  .setDescription('Her er transcripten for ticketen din. Klikk på knappen under for å åpne filen.')
+  .setColor(0x0099ff); // hex uten #, som tall
+
+const row = new ActionRowBuilder().addComponents(
+  new ButtonBuilder()
+    .setLabel('Åpne transcript')
+    .setStyle(ButtonStyle.Link)
+    .setURL(`${process.env.api}/transcripts?file=${transcript.Id}`)
+);
+
+  // Send DM med embed + knapp
   if (user) {
-    await user.send({
-      content: `📄 Her er transcripten for ticketen din:\n${process.env.api}/transcripts?file=${transcript.Id}`
-    }).catch(() => console.log('Kunne ikke sende DM'));
+    await user.send({ embeds: [transcriptEmbed], components: [row] }).catch(() => console.log('Kunne ikke sende DM'));
   }
 
+  // Send melding i ticket-kanalen med embed + knapp
+  await interaction.channel.send({
+    content: '✅ Transcript har blitt lagd og lagret!',
+    embeds: [transcriptEmbed],
+    components: [row]
+  });
+
+  // Svar på interaksjonen
   return await interaction.editReply({ content: '✅ Transcript sendt til brukeren!', ephemeral: true });
 }
 
