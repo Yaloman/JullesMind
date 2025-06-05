@@ -88,6 +88,6 @@ console.log("b1 created, not exists")
   return res.status(200).json({ message: 'Bot created' });
 });
 
-app.listen(3001, () => {
-  console.log('API running on http://localhost:3001');
+app.listen(process.env.PORT, () => {
+  console.log(`API running on http://localhost:${process.env.PORT}`);
 });

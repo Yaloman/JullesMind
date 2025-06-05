@@ -35,7 +35,7 @@ const saveMessage = require('../handlers/saveMemory');
 const getBotReply = require('../handlers/getResponse');
 const spamMap = new Map(); // userId -> timestamp or count
 const { logEvent, Register } = require('../utils/logger.js');
-const Dashi = require('../multi/dashi/index.js'); // Assuming 'dashi' is installed via npm or in your project
+const Dashi = require('../utils/dashi/index.js'); // Assuming 'dashi' is installed via npm or in your project
 const Ticket = require('../database/schemas/Ticket');
 
 const rId = require('random-id')
