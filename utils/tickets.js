@@ -8,7 +8,7 @@ const Ticket = require('../database/schemas/Ticket');
 const Panel = require('../database/schemas/Panel');
 const { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ChannelType, PermissionFlagsBits } = require('discord.js')
 const rId = require ('random-id');
-const Transcript = require('../api/models/Transcript');
+const Transcript = require('../database/schemas/Trans');
 const crypto = require('crypto');
 
 async function createTranscriptInDb(channel) {
