@@ -10,7 +10,7 @@ console.log("Step 1 - Starter botten...");
 const tickets = require('../utils/tickets.js');
 const { Client, GatewayIntentBits, Collection, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 console.log("Step 2 - Discord.js importert");
-
+const mongoose = require('mongoose');
 const fs = require('fs');
 console.log("Step 3 - FS loaded");
 
@@ -52,6 +52,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.MessageContent
   ]
@@ -69,9 +70,90 @@ const dashi = new Dashi({
   apiUrl: process.env.api, // replace with real dashboard API URL
   token: rId2
 });
+
+const VerificationSchema = new mongoose.Schema({
+  discordId: String,
+  email: String,
+  code: String,
+  verified: Boolean
+});
+
+const Verification = mongoose.models.Verification || mongoose.model('Verification', VerificationSchema);
+
+
 client.once('ready', async() => {
   console.log(`✅ Logged in as ${client.user.tag}`);
+  const GUILD_ID = process.env.GUILD_ID;
+  const VERIFIED_ROLE_ID = process.env.VERIFIED_ROLE_ID;
+  const NEW_ROLE_ID = process.env.NEW_ROLE_ID;
 
+  const guild = await client.guilds.fetch(GUILD_ID);
+
+  // Poll every 5 seconds
+  setInterval(async () => {
+    try {
+      const verifiedUsers = await Verification.find({ verified: true });
+
+      for (const user of verifiedUsers) {
+        const member = await guild.members.fetch(user.discordId).catch(() => null);
+        if (!member) continue;
+
+        if (member.roles.cache.has(VERIFIED_ROLE_ID)) continue; // Already verified
+
+        // Add role
+        await member.roles.add(VERIFIED_ROLE_ID).catch(console.error);
+
+        // Optionally remove 'new' role
+        await member.roles.remove(NEW_ROLE_ID).catch(() => {});
+
+        console.log(`✅ Gave ${member.user.tag} the verified role.`);
+
+        // Optional: mark as processed (e.g., `processed: true`)
+        // Or delete the entry to avoid repeating
+        await Verification.deleteOne({ discordId: user.discordId });
+      }
+    } catch (err) {
+      console.error('❌ Polling error:', err);
+    }
+  }, 5000);
+
+
+
+
+const verificationChannelId = process.env.VERIFICATION_CHANNEL_ID;
+  const channel = await client.channels.fetch(verificationChannelId);
+
+  if (!channel || !channel.isTextBased()) {
+    return console.error('❌ Verification channel not found or not text-based!');
+  }
+
+  // Delete previous messages
+  try {
+    const messages = await channel.messages.fetch({ limit: 100 });
+    await channel.bulkDelete(messages, true);
+    console.log('🧹 Cleared previous messages in verification channel.');
+  } catch (err) {
+    console.warn('⚠️ Could not bulk delete messages:', err);
+  }
+
+  // Create verification button
+  const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+
+  const embed = new EmbedBuilder()
+    .setTitle('🔒 Verify Your Account')
+    .setDescription('Click the button below to start the verification process.')
+    .setColor(0x00AE86);
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('verify_start')
+      .setLabel('Start Verification')
+      .setStyle(ButtonStyle.Primary)
+  );
+
+  await channel.send({ embeds: [embed], components: [row] });
+
+  console.log('✅ Verification message sent.');
 
 
   
@@ -113,6 +195,30 @@ client.on('interactionCreate', async (interaction) => {
   if (interaction.isButton() && interaction.customId === 'close_ticket') return tickets.close(client,interaction);
   if (interaction.isButton() && interaction.customId === 'delete_ticket') return tickets.del(client,interaction);
   if (interaction.isButton() && interaction.customId === 'reopen_ticket') return tickets.reopen(client,interaction);
+  if (interaction.customId === 'verify_start') {
+    await interaction.deferReply({ ephemeral: true });
+
+    const user = interaction.user;
+
+    try {
+      await user.send({
+        content: `👋 Hello, ${user.username}!\n\nClick the link below to start the verification process:\n\n🔗 **[Verify Here](http://localhost:3000/verify)**`,
+      });
+
+      await interaction.editReply({
+        content: '📩 Check your DMs for the verification link!',
+        ephemeral: true,
+      });
+
+      console.log(`📤 Sent verification DM to ${user.tag}`);
+    } catch (err) {
+      console.error(`❌ Could not send DM to ${user.tag}:`, err);
+      await interaction.editReply({
+        content: '❌ I couldn’t send you a DM. Please check your privacy settings!',
+        ephemeral: true,
+      });
+    }
+  }
   if (interaction.isButton() && interaction.customId === 'trans_ticket') {
   await interaction.deferReply({ ephemeral: true });
 
@@ -272,6 +378,46 @@ startConversation(userId, async () => {
     console.error(`❌ Error executing command ${commandName}:`, error);
     message.reply('Det oppstod en feil når kommandoen skulle kjøres.');
   }
+});
+
+client.on('guildMemberAdd', async (member) => {
+
+  const { id: discordId } = member.user;
+
+  // Add 'new' role
+  const NEW_ROLE_ID = process.env.NEW_ROLE_ID;
+  
+  try {
+    await member.roles.add(NEW_ROLE_ID);
+    console.log(`✅ Added 'new' role to ${member.user.tag}`);
+    const channel2 = await client.channels.fetch(process.env.VERIFICATION_CHANNEL_ID);
+    const message = await channel2.send(`<@${discordId}`);
+
+    await message.delete();
+
+  } catch (error) {
+    console.error(`❌ Failed to add 'new' role to ${member.user.tag}:`, error);
+  }
+
+  // Optional: Create verification DB entry here
+
+
+
+  // Create a document if it doesn't exist
+  const existing = await Verification.findOne({ discordId });
+
+  if (!existing) {
+    await Verification.create({
+      discordId,
+      email: null,
+      code: null,
+      verified: false
+    });
+    console.log(`📥 Created verification doc for ${member.user.tag}`);
+  } else {
+    console.log(`⚠️ Verification doc already exists for ${member.user.tag}`);
+  }
+  
 });
 
 

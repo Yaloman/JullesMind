@@ -4,16 +4,19 @@
   "description": "API backend for the JullesMind universal Discord bot dashboard",
   "main": "server.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "author": "Abdi Hassan",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
+    "discord-html-transcripts": "^3.2.0",
+    "discord.js": "^14.19.3",
     "dotenv": "^16.3.1",
     "express": "^4.18.3",
-    "mongoose": "^7.6.0"
+    "mongoose": "^7.6.0",
+    "resend": "^4.5.2"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

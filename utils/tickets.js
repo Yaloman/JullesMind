@@ -10,7 +10,7 @@ const { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ChannelType,
 const rId = require ('random-id');
 const Transcript = require('../database/schemas/Trans');
 const crypto = require('crypto');
-
+const { generateFromMessages } = require('discord-html-transcripts');
 async function createTranscriptInDb(channel) {
   const messages = [];
   let lastId;
@@ -24,27 +24,33 @@ async function createTranscriptInDb(channel) {
 
   messages.reverse();
 
-  const content = messages.map(m => {
-    const ts = m.createdAt.toLocaleString();
-    return `[${ts}] ${m.author.tag}: ${m.content}`;
-  }).join('\n');
+  // Generate transcript HTML
+  const transcriptHTML = await generateFromMessages(messages, channel, {
+    returnType: 'string',
+    saveImages: false,
+  });
+
+
+  const cleanedHtml = transcriptHTML.replace(`<div style="text-align:center;width:100%">Exported ${messages.length} messages. <span style="text-align:center">Powered by <a href="https://github.com/ItzDerock/discord-html-transcripts" style="color:lightblue">discord-html-transcripts</a>.</span></div>`, `<div style="text-align:center;width:100%">Exported ${messages.length} messages. <span style="text-align:center">Powered by <a href="https://croove.me" style="color:lightblue">Croove</a>.</span></div>`);
+  const ticketData = await Ticket.findOne({ channelId: channel.id });
+  if (!ticketData) throw new Error('Ticket data not found for channel');
 
   const transcriptId = crypto.randomBytes(6).toString('hex');
-  const t1 = await Ticket.findOne({
-    channelId: channel.id
-  });
-  await Transcript.create({
+
+  // Store HTML in DB (or file system if preferred)
+  const transcript = await Transcript.create({
     transcriptId,
-    ticketId: t1.Id,
-    userId: t1.userId,
+    ticketId: ticketData.Id,
+    userId: ticketData.userId,
     channelId: channel.id,
-    content
+    guildName: channel.guild.name,
+    html: cleanedHtml,
   });
-  const transcript = await {
+
+  return {
     Id: transcriptId,
-    t: t1
-  }
-  return transcript;
+    t: ticketData,
+  };
 }
 async function close(client, interaction) {
   const ticket = await Ticket.findOne({ channelId: interaction.channel.id, status: 'open' });

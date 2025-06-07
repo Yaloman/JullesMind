@@ -6,4 +6,4 @@ const verificationSchema = new mongoose.Schema({
   channelId: { type: String, required: true }
 });
 
-module.exports = mongoose.model('Verification', verificationSchema);
+module.exports = mongoose.model('Verification22222', verificationSchema);
