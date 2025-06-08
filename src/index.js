@@ -121,9 +121,7 @@ client.on('interactionCreate', async (interaction) => {
           await interaction.deferReply({ ephemeral: true });
           const user = interaction.user;
           try {
-            await user.send({ content: `👋 Hello, ${user.username}!
-
-Click to verify: ${process.env.DASHBOARD_URL}/verify` });
+            await user.send({ content: `Hello, ${user.username}!\n\nClick the link below to start the verification process:\n\n🔗 **[Verify Here](${process.env.DASHBOARD_URL}/verify)**` });
             await interaction.editReply({ content: '📩 Check your DMs!', ephemeral: true });
           } catch (err) {
             console.error(`❌ DM to ${user.tag} failed:`, err);
