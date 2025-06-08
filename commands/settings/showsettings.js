@@ -14,12 +14,21 @@ module.exports = {
 
     const adminRoles = config.admins.map(id => `<@&${id}>`).join(', ') || 'None';
     const modRoles = config.moderators.map(id => `<@&${id}>`).join(', ') || 'None';
+    const language = config.language;
+    const verify1 = config.verify;
+    const verify = 'Disabled';
+    if(verify) verify = 'Enabled';
+    const email = config.email;
+    
 
     interaction.reply({
       content: `📋 **Bot Settings:**
 **Prefix**: \`${config.prefix}\`
 **Admins**: ${adminRoles}
-**Moderators**: ${modRoles}`,
+**Moderators**: ${modRoles}
+**Language**: ${config.language}
+**Verification Module**: ${verify}
+**Default Email used**: ${email}`,
       ephemeral: true
     });
   }

@@ -1,3 +1,4 @@
+// deploy.js
 const { REST, Routes } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
@@ -27,17 +28,17 @@ for (const folder of commandFolders) {
 
 const rest = new REST({ version: '10' }).setToken(process.env.BOT_TOKEN);
 
-(async () => {
+async function deployToGuild(guildId) {
   try {
-    console.log('🚀 Registrerer slash-kommandoer...');
-
+    console.log(`🚀 Registrerer kommandoer for guild ${guildId}...`);
     await rest.put(
-      Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+      Routes.applicationGuildCommands(process.env.CLIENT_ID, guildId),
       { body: commands }
     );
-
-    console.log('✅ Slash-kommandoer registrert for serveren!');
+    console.log(`✅ Kommandoer registrert for guild ${guildId}`);
   } catch (error) {
-    console.error('❌ Noe gikk galt under registreringen:', error);
+    console.error(`❌ Feil ved registrering for guild ${guildId}:`, error);
   }
-})();
+}
+
+module.exports = deployToGuild;
