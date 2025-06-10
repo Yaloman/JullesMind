@@ -1,0 +1,2 @@
+- name: Actions Discord Notifier
+  uses: PingChunChung/actions-discord-notifier@v0.1.1
